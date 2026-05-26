@@ -1,13 +1,8 @@
-"""
-LSTM model architecture for text generation.
-"""
-
+# src/model.py
+"""LSTM model architecture definitions for text generation."""
 import tensorflow as tf
 from tensorflow.keras import layers, Model, Sequential
-from typing import Tuple, Optional
-
 from config import config
-
 
 def build_lstm_model(vocab_size: int,
                      sequence_length: int = config.sequence_length,
@@ -15,38 +10,16 @@ def build_lstm_model(vocab_size: int,
                      lstm_units_1: int = config.lstm_units_1,
                      lstm_units_2: int = config.lstm_units_2,
                      dropout_rate: float = config.dropout_rate) -> Model:
-    """
-    Build a stacked LSTM model for character-level text generation.
-    
-    Architecture:
-        1. Embedding layer: Maps character indices to dense vectors
-        2. LSTM layer 1: First recurrent layer with return_sequences=True
-        3. Dropout: Regularization to prevent overfitting
-        4. LSTM layer 2: Second recurrent layer
-        5. Dropout: Additional regularization
-        6. Dense output: Softmax over vocabulary for next character prediction
-    
-    Args:
-        vocab_size: Number of unique characters in vocabulary.
-        sequence_length: Length of input sequences.
-        embedding_dim: Dimension of character embeddings.
-        lstm_units_1: Units in first LSTM layer.
-        lstm_units_2: Units in second LSTM layer.
-        dropout_rate: Dropout probability.
-    
-    Returns:
-        Compiled Keras Model.
-    """
+    """Build a stacked LSTM model for character-level text generation."""
     model = Sequential([
-        # Embedding layer: converts indices to dense vectors
+        # Embedding layer
         layers.Embedding(
             input_dim=vocab_size,
             output_dim=embedding_dim,
             input_length=sequence_length,
             name="embedding"
         ),
-        
-        # First LSTM layer with return_sequences for stacking
+        # First LSTM Layer
         layers.LSTM(
             units=lstm_units_1,
             return_sequences=True,
@@ -54,7 +27,7 @@ def build_lstm_model(vocab_size: int,
         ),
         layers.Dropout(dropout_rate, name="dropout_1"),
         
-        # Second LSTM layer
+        # Second LSTM Layer
         layers.LSTM(
             units=lstm_units_2,
             return_sequences=False,
@@ -62,7 +35,7 @@ def build_lstm_model(vocab_size: int,
         ),
         layers.Dropout(dropout_rate, name="dropout_2"),
         
-        # Output layer: probability distribution over vocabulary
+        # Output layer
         layers.Dense(
             units=vocab_size,
             activation="softmax",
@@ -72,55 +45,32 @@ def build_lstm_model(vocab_size: int,
     
     return model
 
-
-def compile_model(model: Model,
-                  learning_rate: float = config.learning_rate) -> Model:
-    """
-    Compile model with optimizer and loss function.
-    
-    Args:
-        model: Keras model to compile.
-        learning_rate: Learning rate for Adam optimizer.
-    
-    Returns:
-        Compiled model.
-    """
+def compile_model(model: Model, learning_rate: float = config.learning_rate) -> Model:
+    """Compile model with optimizer and loss function."""
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
         loss="sparse_categorical_crossentropy",
         metrics=["accuracy"]
     )
-    
     return model
-
 
 def build_deeper_model(vocab_size: int,
                        sequence_length: int = config.sequence_length,
                        num_lstm_layers: int = 3,
                        lstm_units: int = 256) -> Model:
-    """
-    Build a deeper LSTM model for experimentation.
-    
-    Args:
-        vocab_size: Number of unique characters.
-        sequence_length: Input sequence length.
-        num_lstm_layers: Number of stacked LSTM layers.
-        lstm_units: Units per LSTM layer.
-    
-    Returns:
-        Compiled Keras Model.
-    """
+    """Build a deeper LSTM model for experimentation."""
     model = Sequential(name="deep_lstm_generator")
-    
-    model.add(layers.Embedding(vocab_size, config.embedding_dim, 
-                               input_length=sequence_length))
+    model.add(layers.Embedding(vocab_size, config.embedding_dim, input_length=sequence_length))
     
     for i in range(num_lstm_layers):
-        return_sequences = i < num_lstm_layers - 1
-        model.add(layers.LSTM(lstm_units, return_sequences=return_sequences,
-                              name=f"lstm_{i+1}"))
+        # Only the final LSTM layer has return_sequences=False
+        return_sequences = (i < num_lstm_layers - 1)
+        model.add(layers.LSTM(
+            lstm_units,
+            return_sequences=return_sequences,
+            name=f"lstm_{i+1}"
+        ))
         model.add(layers.Dropout(config.dropout_rate))
-    
+        
     model.add(layers.Dense(vocab_size, activation="softmax"))
-    
     return model
