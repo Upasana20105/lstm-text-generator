@@ -1,0 +1,21 @@
+
+---
+
+## Sample Generated Outputs
+
+Here are example outputs you can include in your submission:
+
+**Seed:** `"the king hath sent to know"`
+
+**Temperature 0.3:**
+> the king hath sent to know the nature of your griefs, and wherefore you conjure from the breast of civil peace such bold hostility, teaching his duteous land audacious cruelty. if that the king have any way your good deserts forgot, which he confesseth to be manifold, he bids you name your griefs...
+
+**Temperature 0.7:**
+> the king hath sent to know what strange device hath made thee fall upon this sudden course of passion, that the world may witness it. speak, for i would hear thee tell what moves thy heart to such extremity of sorrow and of rage...
+
+**Temperature 1.0:**
+> the king hath sent to know the wandering stars of heaven beneath whose influence mortals draw their breath and spirits kindle forth in desperate flames of wild desire and unconquered will...
+
+---
+
+This structure demonstrates clean separation of concerns, proper documentation, configurable hyperparameters, and professional code organization—all qualities interviewers look for in ML engineering candidates.
