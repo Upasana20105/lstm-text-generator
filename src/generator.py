@@ -1,47 +1,20 @@
-"""
-Text generation using trained LSTM model.
-"""
-
+# src/generator.py
+"""Text generation using trained LSTM model."""
 import numpy as np
 from tensorflow.keras import Model
-from typing import Optional
-
 from src.preprocessor import TextPreprocessor
 from config import config
 
-
 class TextGenerator:
-    """
-    Generate text using a trained LSTM model.
-    
-    Attributes:
-        model: Trained Keras model.
-        preprocessor: TextPreprocessor with vocabulary mappings.
-    """
+    """Generate text using a trained LSTM model."""
     
     def __init__(self, model: Model, preprocessor: TextPreprocessor):
         self.model = model
         self.preprocessor = preprocessor
         self.sequence_length = config.sequence_length
-    
-    def _sample_with_temperature(self, 
-                                  predictions: np.ndarray, 
-                                  temperature: float) -> int:
-        """
-        Sample from predictions with temperature scaling.
-        
-        Temperature controls randomness:
-            - Low (0.2-0.5): More deterministic, repetitive but coherent
-            - Medium (0.7-1.0): Balanced creativity and coherence
-            - High (1.2+): More random, creative but potentially nonsensical
-        
-        Args:
-            predictions: Probability distribution over vocabulary.
-            temperature: Sampling temperature.
-        
-        Returns:
-            Sampled character index.
-        """
+
+    def _sample_with_temperature(self, predictions: np.ndarray, temperature: float) -> int:
+        """Sample from predictions with temperature scaling."""
         predictions = np.asarray(predictions).astype("float64")
         
         # Apply temperature scaling
@@ -52,38 +25,24 @@ class TextGenerator:
         # Sample from the distribution
         sampled_index = np.random.multinomial(1, predictions, 1)
         return np.argmax(sampled_index)
-    
+
     def generate(self,
                  seed_text: str,
                  length: int = config.generation_length,
                  temperature: float = config.temperature) -> str:
-        """
-        Generate text starting from a seed sequence.
-        
-        Args:
-            seed_text: Initial text to start generation from.
-                       Must be at least sequence_length characters.
-            length: Number of characters to generate.
-            temperature: Sampling temperature (0.2-1.5 recommended).
-        
-        Returns:
-            Generated text string.
-        """
-        # Clean and validate seed text
+        """Generate text starting from a seed sequence."""
         seed_text = self.preprocessor.clean_text(seed_text)
-        
         if len(seed_text) < self.sequence_length:
             raise ValueError(
                 f"Seed text must be at least {self.sequence_length} characters. "
                 f"Got {len(seed_text)} characters."
             )
-        
+            
         # Start with the last sequence_length characters of seed
         current_sequence = seed_text[-self.sequence_length:]
         generated = ""
         
         print(f"Generating {length} characters with temperature {temperature}...")
-        
         for _ in range(length):
             # Encode current sequence
             encoded = self.preprocessor.encode_text(current_sequence)
@@ -99,24 +58,14 @@ class TextGenerator:
             # Update sequence and generated text
             generated += next_char
             current_sequence = current_sequence[1:] + next_char
-        
+            
         return generated
-    
+
     def generate_multiple(self,
                           seed_text: str,
                           temperatures: list = [0.3, 0.5, 0.7, 1.0],
                           length: int = 300) -> dict:
-        """
-        Generate text at multiple temperature settings for comparison.
-        
-        Args:
-            seed_text: Seed text for generation.
-            temperatures: List of temperatures to try.
-            length: Length of each generated sample.
-        
-        Returns:
-            Dictionary mapping temperatures to generated text.
-        """
+        """Generate text at multiple temperature settings for comparison."""
         results = {}
         for temp in temperatures:
             results[temp] = self.generate(seed_text, length, temp)
