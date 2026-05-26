@@ -1,21 +1,17 @@
-"""
-Configuration settings for the LSTM text generation model.
-Centralized hyperparameters for easy experimentation.
-"""
-
+# config.py
+"""Centralized hyperparameters and settings for easy experimentation."""
 from dataclasses import dataclass
 from pathlib import Path
-
 
 @dataclass
 class Config:
     # Data settings
-    data_url: str = "[gutenberg.org](https://www.gutenberg.org/files/100/100-0.txt)"
+    data_url: str = "https://www.gutenberg.org/files/100/100-0.txt"
     data_path: Path = Path("data/shakespeare.txt")
     
     # Preprocessing
     sequence_length: int = 100  # Number of characters per input sequence
-    step_size: int = 3          # Sliding window step for creating sequences
+    step_size: int = 3         # Sliding window step for creating sequences
     
     # Model architecture
     embedding_dim: int = 256
@@ -34,12 +30,12 @@ class Config:
     min_delta: float = 0.001
     
     # Generation
-    temperature: float = 0.5  # Controls randomness (lower = more deterministic)
+    temperature: float = 0.5  # Controls randomness (lower is more deterministic)
     generation_length: int = 500
     
     # Paths
     checkpoint_dir: Path = Path("checkpoints")
     output_dir: Path = Path("outputs")
 
-
+# Instantiate a global config object for export
 config = Config()
